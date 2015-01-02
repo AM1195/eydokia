@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context antiJARLocking="true" path="/EYDOKIA-0.1">
+    <!-- http://stackoverflow.com/a/18006245/1545525 -->
+    <Resource   name="jdbc/eydokia" 
+                auth="Container"
+                type="javax.sql.DataSource"
+                driverClassName="com.mysql.jdbc.Driver"
+                username="root" 
+                password="2FwCjcjDne"
+                url="jdbc:mysql://localhost:3306/eydokia"
+                maxActive="100" 
+                maxIdle="30" 
+                maxWait="10000" />
+</Context>
