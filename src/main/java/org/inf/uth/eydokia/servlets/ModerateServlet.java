@@ -1,9 +1,8 @@
 
-package org.inf.uth.eydokia;
+package org.inf.uth.eydokia.servlets;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.ServletException;
@@ -13,11 +12,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 import static org.inf.uth.eydokia.jooq.tables.Entry.ENTRY;
 import static org.inf.uth.eydokia.jooq.tables.Room.ROOM;
-import org.inf.uth.eydokia.jooq.tables.RoomEntry;
 import static org.inf.uth.eydokia.jooq.tables.Schedule.SCHEDULE;
-import org.inf.uth.eydokia.jooq.tables.ScheduleType;
 import static org.inf.uth.eydokia.jooq.tables.ScheduleType.SCHEDULE_TYPE;
 import static org.inf.uth.eydokia.jooq.tables.User.USER;
+import org.inf.uth.eydokia.jooq.tables.records.EntryRecord;
 import org.inf.uth.eydokia.jooq.tables.records.RoomRecord;
 import org.inf.uth.eydokia.jooq.tables.records.ScheduleRecord;
 import org.inf.uth.eydokia.jooq.tables.records.ScheduleTypeRecord;
@@ -31,21 +29,60 @@ import org.jooq.impl.DSL;
  *
  * @author Nilos
  */
-public class CalendarServlet extends HttpServlet {
+public class ModerateServlet extends HttpServlet 
+{
+    private final static String STATUS_ACCEPT = "accept";
+    private final static String STATUS_REJECT = "reject";
     
     @Resource(name = "jdbc/eydokia")
     private DataSource mDataSource;
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException 
+    {
+        try (Connection conn = mDataSource.getConnection())
+        {
+            DSLContext create = DSL.using(conn, SQLDialect.MYSQL);
+            
+            UserRecord user = (UserRecord) request.getSession().getAttribute("user");
+            int entry_id = Integer.parseInt(request.getParameter("entry_id"));
+            EntryRecord entry = create
+                                    .fetchOne(ENTRY, ENTRY.ENTRY_ID.eq(entry_id));
+            
+            switch (request.getParameter("status"))
+            {
+            case STATUS_ACCEPT:
+                entry.setStatus((byte) 1);
+                break;
+            case STATUS_REJECT:
+                String info = request.getParameter("info_text" + entry_id);
+                
+                if (info == null || info.isEmpty())
+                {
+                    throw new Exception("Please specify the cause of rejection.");
+                }
+                
+                entry.setInfoText(info);
+                entry.setInfoUser(String.format("%s [%s]", user.getFullName(), user.getUsername()));
+                entry.setStatus((byte) -1);
+                break;
+            default:
+                throw new Exception("Wrong status param: " + request.getParameter("status"));
+            }
+            
+            entry.update();
+            doGet(request, response);
+        }
+        catch (Exception e)
+        {
+             request.setAttribute("errorMsg", e.getMessage());
+             doGet(request, response);
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException 
     {
         try (Connection conn = mDataSource.getConnection())
@@ -74,27 +111,13 @@ public class CalendarServlet extends HttpServlet {
             request.setAttribute("schedules", schedules);  
             request.setAttribute("schedule_types", scheduleTypes);  
             
-            request.getRequestDispatcher("/calendar.jsp").forward(request, response);
+            request.getRequestDispatcher("/moderate.jsp").forward(request, response);
         }
         catch (Exception e)
         {
-            
+            request.setAttribute("errorMsg", e.getMessage());
+            request.getRequestDispatcher("/moderate.jsp").forward(request, response);                    
         }
-    }
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
     }
 
     /**

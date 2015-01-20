@@ -10,7 +10,8 @@
     </head>
     <body>
         <%@ include file="/WEB-INF/jspf/header.jspf" %>
-        <%@ include file="/WEB-INF/jspf/room_entries.jspf" %>
+        <%@ include file="/WEB-INF/jspf/date_entries.jspf" %>
+        <%@ include file="/WEB-INF/jspf/calendar_widget.jspf" %>
     </body>
 </html>
 

@@ -16,9 +16,11 @@
         ${requestScope.user.email} <br />
         ${requestScope.user.extraInfo} <br />
         
+        <h2 class="error-msg">${requestScope.errorMsg}</h2>
+        
         <c:choose>
         <c:when test="${sessionScope.user.userId == requestScope.user.userId}">
-            <form action="${pageContext.request.contextPath}/change_password" method="post">
+            <form action="${pageContext.request.contextPath}/change_password?username=${sessionScope.user.username}" method="post">
                 <fieldset>
                     <input type="password" name="old_password" placeholder="Old password" />
                     <input type="password" name="password" placeholder="New password" />
@@ -30,7 +32,7 @@
             <%@ include file="/WEB-INF/jspf/user_entries.jspf" %>
         </c:when>
         <c:otherwise>
-            <%@ include file="/WEB-INF/jspf/room_entries.jspf" %>
+            <%@ include file="/WEB-INF/jspf/date_entries.jspf" %>
         </c:otherwise>
         </c:choose>
     </body>

@@ -1,10 +1,8 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="UTF-8" %>
-
-<h2>Entries of ${requestScope.room.name}</h2>
-
 <table style="width:85%">
     <tr>        
+        <th>Room</th>
         <th>Booked by</th>
         <th>Hours</th>
         <th>Schedule</th>
@@ -13,6 +11,7 @@
     <c:forEach var="entry" items="${requestScope.entries}"> 
         <c:set var="schedule" scope="page" value="${requestScope.schedules[entry.scheduleId]}"/>
         <tr>
+            <td>${requestScope.rooms[entry.roomId].name}</td>
             <td>${requestScope.users[entry.userId].fullName}</td>
             <td>
                 <c:out value="${entry.startTime}" /> - <c:out value="${entry.endTime}" />

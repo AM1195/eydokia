@@ -1,12 +1,13 @@
 
-package org.inf.uth.eydokia;
+package org.inf.uth.eydokia.servlets;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Time;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Map;
@@ -52,16 +53,25 @@ public class BookRoomServlet extends HttpServlet
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException 
+    {
         try (Connection conn = mDataSource.getConnection())
         {
             initCalendarParams(conn, request);
             
             request.getRequestDispatcher("/book_room.jsp").forward(request, response);
         }
+        catch (SQLException e)
+        {
+            throw new RuntimeException("A bad goblin is trying to tackle our database. \n"
+                + "We get him and he had this strange numbers in his pocket: \n"
+                + Arrays.toString(e.toString().getBytes(StandardCharsets.UTF_8)));
+        }
         catch (Exception e)
         {
-            e.printStackTrace();
+            throw new RuntimeException("A strange migician tried broke our server. \n"
+                + "We are fixing it. The magician's spell was this: \n"
+                + Arrays.toString(e.toString().getBytes(StandardCharsets.UTF_8)));
         }
     }
 
@@ -75,21 +85,43 @@ public class BookRoomServlet extends HttpServlet
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException 
+    {
+        String errorField = null;
+        
         try (Connection conn = mDataSource.getConnection())
         {
             DSLContext create = DSL.using(conn, SQLDialect.MYSQL);
             
+            errorField = "Room";
             int roomId = Integer.parseInt(request.getParameter("room_id"));
-            int scheduleTypeId = Integer.parseInt(request.getParameter("schedule_type_id"));
-            Date startDate = new Date(DATE_FMT.parse(request.getParameter("start_date")).getTime());
-            Date endDate = new Date(DATE_FMT.parse(request.getParameter("end_date")).getTime());
-            Time startTime = Time.valueOf(request.getParameter("start_time") + ":00");
-            Time endTime = Time.valueOf(request.getParameter("end_time") + ":00");
-            String description = request.getParameter("description");
             
+            errorField = "Schedule type";
+            int scheduleTypeId = Integer.parseInt(request.getParameter("schedule_type_id"));
+            
+            errorField = "Start date";
+            Date startDate = new Date(DATE_FMT.parse(request.getParameter("start_date")).getTime());
+            
+            errorField = "End date";
+            Date endDate = new Date(DATE_FMT.parse(request.getParameter("end_date")).getTime());
+            
+            errorField = "Start time";
+            Time startTime = Time.valueOf(request.getParameter("start_time") + ":00");
+            
+            errorField = "End time";
+            Time endTime = Time.valueOf(request.getParameter("end_time") + ":00");
+            
+            String description = request.getParameter("description");
+            if (description == null || description.isEmpty())
+            {
+                errorField = "Description";
+                throw new RuntimeException();
+            }
+            
+            errorField = "Record";
             EntryRecord entry = create.newRecord(ENTRY);
-            entry.setUserId((Integer) request.getSession().getAttribute("user"));
+            entry.setUserId(((UserRecord) 
+                        request.getSession().getAttribute("user")).getUserId());
             entry.setRoomId(roomId);
             entry.setStartDate(startDate);
             entry.setEndDate(endDate);
@@ -108,9 +140,19 @@ public class BookRoomServlet extends HttpServlet
             
             request.getRequestDispatcher("/book_room.jsp").forward(request, response);
         }
-        catch (Exception e)
+        catch (ParseException | RuntimeException e)
         {
             e.printStackTrace();
+            
+            request.setAttribute("errorMsg", errorField + " was incorrect or empty!");
+            
+            doGet(request, response);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("A strange migician tried broke our server. \n"
+                + "We are fixing it. The magician's spell was this: \n"
+                + Arrays.toString(e.toString().getBytes(StandardCharsets.UTF_8)));
         }
     }
     

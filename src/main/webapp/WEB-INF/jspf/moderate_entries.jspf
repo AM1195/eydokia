@@ -1,5 +1,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="UTF-8" %>
+
+<h2 class="error-msg">${requestScope.errorMsg}</h2>
 <table style="width:85%">
     <tr>
         <th>Requested at</th>
@@ -27,9 +29,24 @@
             </td>
             <td>${requestScope.schedule_types[schedule.scheduleTypeId].name}</td>
             <td>${entry.description}</td>
-            <td>${entry.status}</td>
-            <td><input type="text" name="info_text" placeholder="Why did you reject?" form="moderate_form" /></td>
-            <td><form method="post" id="moderate_form" action="${pageContext.request.contextPath}/moderate?entry_id=${entry.entryId}" >                    
+            
+            <c:set var="cause" scope="page" value="Why did you reject?" />
+            
+            <c:choose>
+                <c:when test="${entry.status == 1}" >
+                    <td>accepted</td>
+                </c:when>
+                <c:when test="${entry.status == -1}" >
+                    <c:set var="cause" scope="page" value="${entry.infoText}" />
+                    <td>rejected</td>
+                </c:when>
+                <c:otherwise>
+                    <td>pending</td>
+                </c:otherwise>
+            </c:choose>
+            
+            <td><input type="text" name="info_text${entry.entryId}" placeholder="${cause}" form="moderate_form${entry.entryId}" /></td>
+            <td><form method="post" id="moderate_form${entry.entryId}" action="${pageContext.request.contextPath}/moderate?entry_id=${entry.entryId}" >                    
                     <input type="submit" name="status" value="accept" /> 
                     <input type="submit" name="status" value="reject" /> 
                 </form>

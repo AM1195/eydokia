@@ -8,41 +8,48 @@
         <param-name>admin_role_id</param-name>
         <param-value>3</param-value>
     </context-param>
+    <filter>
+        <filter-name>RememberUserFilter</filter-name>
+        <filter-class>org.inf.uth.eydokia.filters.RememberUserFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>RememberUserFilter</filter-name>
+        <servlet-name>LoginServlet</servlet-name>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>RememberUserFilter</filter-name>
+        <servlet-name>RegisterServlet</servlet-name>
+    </filter-mapping>
     <listener>
-        <description>HttpSessionListener</description>
-        <listener-class>org.inf.uth.eydokia.SessionListener</listener-class>
-    </listener>
-    <listener>
-        <description>ServletContextListener</description>
-        <listener-class>org.inf.uth.eydokia.ServletListener</listener-class>
+        <listener-class>org.inf.uth.eydokia.listeners.SessionListener</listener-class>
     </listener>
     <servlet>
         <servlet-name>LoginServlet</servlet-name>
-        <servlet-class>org.inf.uth.eydokia.LoginServlet</servlet-class>
+        <servlet-class>org.inf.uth.eydokia.servlets.LoginServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>RegisterServlet</servlet-name>
-        <servlet-class>org.inf.uth.eydokia.RegisterServlet</servlet-class>
+        <servlet-class>org.inf.uth.eydokia.servlets.RegisterServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>LogoutServlet</servlet-name>
-        <servlet-class>org.inf.uth.eydokia.LogoutServlet</servlet-class>
+        <servlet-class>org.inf.uth.eydokia.servlets.LogoutServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>CalendarServlet</servlet-name>
-        <servlet-class>org.inf.uth.eydokia.CalendarServlet</servlet-class>
+        <servlet-class>org.inf.uth.eydokia.servlets.CalendarServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>ProfileServlet</servlet-name>
-        <servlet-class>org.inf.uth.eydokia.ProfileServlet</servlet-class>
+        <servlet-class>org.inf.uth.eydokia.servlets.ProfileServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>BookRoomServlet</servlet-name>
-        <servlet-class>org.inf.uth.eydokia.BookRoomServlet</servlet-class>
+        <servlet-class>org.inf.uth.eydokia.servlets.BookRoomServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>ModerateServlet</servlet-name>
-        <servlet-class>org.inf.uth.eydokia.ModerateServlet</servlet-class>
+        <servlet-class>org.inf.uth.eydokia.servlets.ModerateServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>LoginServlet</servlet-name>
@@ -61,10 +68,6 @@
         <url-pattern>/calendar</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>ProfileServlet</servlet-name>
-        <url-pattern>/profile</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
         <servlet-name>BookRoomServlet</servlet-name>
         <url-pattern>/book_room</url-pattern>
     </servlet-mapping>
@@ -72,12 +75,17 @@
         <servlet-name>ModerateServlet</servlet-name>
         <url-pattern>/moderate</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ProfileServlet</servlet-name>
+        <url-pattern>/profile</url-pattern>
+        <url-pattern>/change_password</url-pattern>
+    </servlet-mapping>
     <session-config>
         <session-timeout>
             30
         </session-timeout>
     </session-config>
     <welcome-file-list>
-        <welcome-file>register_or_login.jsp</welcome-file>
+        <welcome-file>welcome.jsp</welcome-file>
     </welcome-file-list>
 </web-app>

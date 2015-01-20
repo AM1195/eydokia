@@ -1,5 +1,11 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page contentType="text/html" pageEncoding="UTF-8" %>
+
+<c:if test="${sessionScope.user.userId > 0}" >
+    <!-- don't let someone logged in to login/register -->
+    <c:redirect url="/profile?username=${sessionScope.user.username}" />
+</c:if>
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -13,7 +19,7 @@
         
         <h2 class="error-msg">${requestScope.errorMsg}</h2>
         
-        <h1>Register!</h1>
+        <h1>Register:</h1>
         <form action="${pageContext.request.contextPath}/register" method="post">
             <fieldset>
                 <input type="text" name="username" placeholder="Username" />
@@ -28,11 +34,12 @@
         </form>
         
         <div class="vertical-line"></div>
-        <h1>Login!</h1>
+        <h1>Login:</h1>
         <form action="${pageContext.request.contextPath}/login" method="post">
             <fieldset>
                 <input type="text" name="username" placeholder="Username" />
                 <input type="password" name="password" placeholder="Password" />
+                <input type="checkbox" name="remember" />Remember me?
                 <input type="submit" name="login" value="Login" />
             </fieldset>
         </form>

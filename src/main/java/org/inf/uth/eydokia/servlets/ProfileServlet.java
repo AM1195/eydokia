@@ -1,5 +1,5 @@
 
-package org.inf.uth.eydokia;
+package org.inf.uth.eydokia.servlets;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -29,7 +29,10 @@ import org.jooq.impl.DSL;
  *
  * @author Nilos
  */
-public class ProfileServlet extends HttpServlet {
+public class ProfileServlet extends HttpServlet 
+{
+    private static final int UNAME_MIN = 4;
+    private static final int UNAME_MAX = 16;
     
     @Resource(name = "jdbc/eydokia")
     private DataSource mDataSource;
@@ -83,10 +86,57 @@ public class ProfileServlet extends HttpServlet {
         }
         catch (Exception e)
         {
-            
+            request.setAttribute("errorMsg", e.getMessage());
+            request.getRequestDispatcher("/profile.jsp").forward(request, response);
         }
     }
 
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException 
+    {
+        String oldPassword =   request.getParameter("old_password");
+        String password =   request.getParameter("password");
+        String _password =  request.getParameter("_password");
+        
+        try (Connection conn = mDataSource.getConnection())
+        {
+            DSLContext create = DSL.using(conn, SQLDialect.MYSQL);
+            UserRecord user = (UserRecord) request.getSession().getAttribute("user");
+            user.attach(create.configuration());
+            
+            if(!user.getPassword().equals(oldPassword))
+            {
+                throw new Exception("Wrong password.");
+            }
+            
+            if (!password.equals(_password))
+            {
+                throw new Exception("Passwords don't match.");
+            }
+            
+            if (!password.matches(String.format("^([A-Za-z0-9]{%d,%d})$", 
+                                    UNAME_MIN, UNAME_MAX)))
+            {
+                throw new Exception(
+                    String.format("Password must be between %d and %d charcters "
+                            + "and contain only letter and digits.", 
+                            UNAME_MIN, UNAME_MAX));
+            }
+            
+            user.setPassword(password);
+            
+            user.update();
+            request.getSession().setAttribute("user", user);
+            doGet(request, response);
+        }
+        catch (Exception e) 
+        {
+            request.setAttribute("errorMsg", e.getMessage());
+            doGet(request, response);
+        }
+    }
+    
     /**
      * Returns a short description of the servlet.
      *

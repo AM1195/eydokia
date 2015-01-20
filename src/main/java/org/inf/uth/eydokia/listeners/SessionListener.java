@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.inf.uth.eydokia;
+package org.inf.uth.eydokia.listeners;
 
 import java.sql.Connection;
 import javax.annotation.Resource;

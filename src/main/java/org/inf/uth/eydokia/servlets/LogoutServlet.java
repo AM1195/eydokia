@@ -3,17 +3,20 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.inf.uth.eydokia;
+package org.inf.uth.eydokia.servlets;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.Connection;
 import javax.annotation.Resource;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
+import static org.inf.uth.eydokia.servlets.LoginServlet.COOKIE_DELIM;
+import static org.inf.uth.eydokia.servlets.LoginServlet.COOKIE_NAME_USER;
+import static org.inf.uth.eydokia.servlets.LoginServlet.login;
 import static org.inf.uth.eydokia.jooq.tables.User.USER;
 import org.inf.uth.eydokia.jooq.tables.records.UserRecord;
 import org.jooq.DSLContext;
@@ -48,13 +51,25 @@ public class LogoutServlet extends HttpServlet
                                 .where(USER.USERNAME.eq(guestUsername))
                             .fetchOne();
             request.getSession().setAttribute("user", user);
+            
+            Cookie[] cookies = request.getCookies();
+            
+            for (Cookie c : cookies)
+            {
+                if (COOKIE_NAME_USER.equals(c.getName()))
+                {
+                    c.setMaxAge(0);
+                    response.addCookie(c);
+                    break;
+                }
+            }
 
             request.getRequestDispatcher("/register_or_login.jsp")
                     .forward(request, response);
         }
         catch (Exception e)
         {
-            
+            e.printStackTrace();
         }
     }
 

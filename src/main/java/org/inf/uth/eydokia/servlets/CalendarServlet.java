@@ -1,8 +1,9 @@
 
-package org.inf.uth.eydokia;
+package org.inf.uth.eydokia.servlets;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.ServletException;
@@ -12,10 +13,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 import static org.inf.uth.eydokia.jooq.tables.Entry.ENTRY;
 import static org.inf.uth.eydokia.jooq.tables.Room.ROOM;
+import org.inf.uth.eydokia.jooq.tables.RoomEntry;
 import static org.inf.uth.eydokia.jooq.tables.Schedule.SCHEDULE;
+import org.inf.uth.eydokia.jooq.tables.ScheduleType;
 import static org.inf.uth.eydokia.jooq.tables.ScheduleType.SCHEDULE_TYPE;
 import static org.inf.uth.eydokia.jooq.tables.User.USER;
-import org.inf.uth.eydokia.jooq.tables.records.EntryRecord;
 import org.inf.uth.eydokia.jooq.tables.records.RoomRecord;
 import org.inf.uth.eydokia.jooq.tables.records.ScheduleRecord;
 import org.inf.uth.eydokia.jooq.tables.records.ScheduleTypeRecord;
@@ -29,53 +31,21 @@ import org.jooq.impl.DSL;
  *
  * @author Nilos
  */
-public class ModerateServlet extends HttpServlet 
-{
-    private final static String STATUS_ACCEPT = "accept";
-    private final static String STATUS_REJECT = "reject";
+public class CalendarServlet extends HttpServlet {
     
     @Resource(name = "jdbc/eydokia")
     private DataSource mDataSource;
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException 
-    {
-        try (Connection conn = mDataSource.getConnection())
-        {
-            DSLContext create = DSL.using(conn, SQLDialect.MYSQL);
-            UserRecord user = (UserRecord) request.getSession().getAttribute("user");
-            
-            EntryRecord entry = create
-                    .fetchOne(ENTRY, 
-                                ENTRY.ENTRY_ID.eq(Integer.parseInt(request.getParameter("entry_id"))));
-            entry.setInfoText(request.getParameter("info_text"));
-            entry.setInfoUser(String.format("%s [%s]", user.getFullName(), user.getUsername()));
-            
-            switch (request.getParameter("status"))
-            {
-            case STATUS_ACCEPT:
-                entry.setStatus((byte) 1);
-                break;
-            case STATUS_REJECT:
-                entry.setStatus((byte) -1);
-                break;
-            default:
-                System.out.println("Wrong status param: " + request.getParameter("status"));
-                break;
-            }
-            
-            entry.update();
-            doGet(request, response);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException 
     {
         try (Connection conn = mDataSource.getConnection())
@@ -104,12 +74,27 @@ public class ModerateServlet extends HttpServlet
             request.setAttribute("schedules", schedules);  
             request.setAttribute("schedule_types", scheduleTypes);  
             
-            request.getRequestDispatcher("/moderate.jsp").forward(request, response);
+            request.getRequestDispatcher("/calendar.jsp").forward(request, response);
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            
         }
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    /**
+     * Handles the HTTP <code>GET</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
     }
 
     /**
